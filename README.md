@@ -68,8 +68,13 @@ informacion-que-nutre/
    - Completar perfil personal y datos de contacto.
    - Registrarse a talleres.
    - Postularse a voluntariado.
-   - Consultar historial básico de registros.
+   - Enviar recetas para revisión editorial.
+   - Proponer enlaces de videos de YouTube relacionados con sus recetas.
+   - Consultar historial básico de registros y envíos.
    - Recibir comunicaciones futuras de la organización.
+   
+   > **Moderación de contenido:** Las recetas y enlaces de video enviados por usuarios registrados no se publican automáticamente. Todo contenido pasa por revisión de un Editor OSF antes de su publicación.
+
 
 3. **Editor OSF**: Usuarios internos de la asociación.
    - Crear, editar y publicar recetas.
@@ -83,26 +88,19 @@ informacion-que-nutre/
    - Consultar métricas y registros.
    - Supervisar auditoría y operación general.
 
-## Modelo de cuenta
+## Modelo de Datos Principal
 
-Para los usuarios, la tabla `users` debería almacenar al menos:
-- `nombre`
-- `apellidos`
-- `email`
-- `teléfono`
-- `municipio` o `zona`
-- `rol`
-- `estado_de_cuenta`
-- `consentimiento_privacidad`
-- `fecha_registro`
+Para el manejo de cuentas, la tabla `users` almacena:
+- `nombre`, `apellidos`, `email`, `teléfono`, `municipio`, `rol`, `estado_de_cuenta`, `consentimiento_privacidad`, `fecha_registro`
 
-Y se separaría en tablas distintas lo operativo:
-- `volunteer_applications`
-- `workshop_registrations`
-- `donations`
-- `contact_requests`
+Para el control operativo y la moderación, el esquema incluye:
 
-> **Nota:** Así una persona puede ser Usuario registrado y, al mismo tiempo, haber donado, aplicado a voluntariado y asistido a talleres sin cambiar de rol.
+- **Catálogo Principal (`recipes`)**: Resguarda las recetas canónicas publicables (incluyendo `servings`, `estimated_cost`, `prep_time_minutes`, `difficulty`, `source_type`, `published_at`, `status`).
+- **Moderación de Recetas (`recipe_submissions`)**: Almacena propuestas enviadas por usuarios registrados, conservando el contenido original hasta revisión (`pending_review`, `approved`, `rejected`).
+- **Videos Relacionados (`recipe_videos`)**: Entidad separada para manejar enlaces de YouTube, ligados a una receta, sujetos a revisión editorial.
+- **Registros operativos**: `volunteer_applications`, `workshop_registrations`, `donations`, `contact_requests`.
+
+> **Nota:** Así una persona puede ser Usuario registrado y tener un historial de recetas propuestas, haber donado, y asistido a talleres sin cambiar de rol.
 
 ## Módulos principales
 
@@ -119,28 +117,50 @@ Y se separaría en tablas distintas lo operativo:
 
 ### Requisitos
 - Node.js 22+
-- pnpm
+- pnpm (Recomendado para el monorepo)
 - Python 3.12+
 - Docker
 
-### Pasos iniciales
+### Pasos de Instalación y Ejecución
 
 1. Clonar el repositorio.
-2. Copiar variables de entorno:
+2. Copiar variables de entorno globales:
    ```bash
    cp .env.example .env
    ```
-3. Levantar servicios base:
+3. Levantar la base de datos PostgreSQL:
    ```bash
    docker compose -f infra/docker/docker-compose.dev.yml up -d
    ```
-4. Instalar dependencias del frontend:
+4. Instalar dependencias del workspace (Frontend y scripts turbo):
    ```bash
    pnpm install
    ```
-5. Instalar dependencias del backend.
-6. Ejecutar migraciones.
-7. Levantar frontend y API en modo desarrollo.
+5. Inicializar entorno virtual de la API e instalar requerimientos:
+   ```bash
+   cd apps/api
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   ```
+6. Ejecutar migraciones iniciales y poblar base de datos de Roles (requiere DB corriendo):
+   ```bash
+   alembic upgrade head
+   python -m src.db.seed
+   cd ../..
+   ```
+7. Levantar el proyecto en desarrollo con Turborepo:
+   ```bash
+   pnpm run dev
+   ```
+
+### Endpoints Básicos Disponibles (Fase 2)
+
+- **Frontend Local:** [http://localhost:3000](http://localhost:3000)
+- **Backend Health:** `GET /api/v1/health`
+- **Auth:** `POST /api/v1/auth/login`, `POST /api/v1/auth/register`, `GET /api/v1/auth/me`
+- **Users:** `GET /api/v1/users/me`, `PATCH /api/v1/users/me`
+- **Recipes MVP:** `GET /api/v1/recipes`, `GET /api/v1/recipes/{id}`, `POST /api/v1/recipes/submissions`
 
 ## Convenciones
 

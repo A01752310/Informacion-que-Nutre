@@ -181,23 +181,39 @@ Si prefieres levantar los servicios manualmente, sigue estos pasos:
    pnpm run dev
    ```
 
-### Estado Actual de la API (Fase 2 Terminada)
+## Estado y Funciones del Proyecto
 
-**✅ Endpoints Listos (Disponibles para Frontend):**
-- **Health:** `GET /api/v1/health`
-- **Auth:** `POST /api/v1/auth/login`, `POST /api/v1/auth/register`, `GET /api/v1/auth/me`
-- **Users:** `GET /api/v1/users/me`, `PATCH /api/v1/users/me`
-- **Recipes:** `GET /api/v1/recipes`, `GET /api/v1/recipes/{id}`
-- **Submissions:** `POST /api/v1/recipes/submissions`, `GET /api/v1/recipes/submissions/me`, `GET /api/v1/recipes/submissions/pending`, `PATCH /api/v1/recipes/submissions/{id}/review`
-- **Videos:** `POST /api/v1/recipes/videos`, `GET /api/v1/recipes/videos/me`, `GET /api/v1/recipes/videos/pending`, `PATCH /api/v1/recipes/videos/{id}/review`
+**Fase actual: MVP Funcional Local (Fase 3 Completada)**
 
-**🚧 Endpoints en Desarrollo o Backlog:**
-- **Workshops (Talleres):** Endpoints de creación y subscripción a talleres.
-- **Volunteer:** Solicitudes pendientes de voluntariado.
-- **Search:** Búsquedas complejas y filtrados.
+### ✅ Listo y Funcional (Demo Local)
+**Frontend (Next.js/React):**
+- Exploración de catálogo público de recetas.
+- Sistema de autenticación JWT (Login/Registro).
+- Perfil de usuario (Mis Recetas, Mis Videos).
+- Formularios para proponer recetas y videos (conectados al Backend).
+- Panel de Moderación para el rol `Editor OSF` (aprobar/rechazar envíos).
 
-**📦 Módulos Modelados Estructuralmente (BD listos, sin exponer):**
-- Ingredientes (Canasta Básica), Logs de Auditoría y Formularios de Contacto.
+**Backend (FastAPI):**
+- Autenticación y gestión de usuarios (roles: Público, Registrado, Editor, Admin).
+- Endpoints operativos para Recetas, Envío de Propuestas de Recetas y Videos de YouTube (`/api/v1/recipes`, `/api/v1/auth`, etc).
+
+**Infraestructura Local:**
+- PostgreSQL contenerizado (`docker-compose.dev.yml`).
+- Migraciones con Alembic automatizadas.
+- Autopoblado (Seeding) de base de datos con roles, usuarios y recetas de prueba listos para demo (`setup_demo.sh` y `start_demo.sh`).
+
+### 🚧 Backlog y Trabajo Pendiente (Lo que falta)
+- **Despliegue a Producción (Deploy):** 
+  - Configurar entorno Cloud (VPS, Railway, Render o AWS).
+  - Proveer un `docker-compose.prod.yml` para el backend.
+  - Pipelines CI/CD oficiales para el despliegue automático.
+- **Poblado Definitivo de Base de Datos:**
+  - Migrar las recetas reales verídicas desde formatos Excel/PDF proporcionados por la fundación a la base de datos productiva.
+- **Nuevos Módulos de Producto:**
+  - Gestión integral de **Talleres** e inscripciones de usuarios.
+  - Recepción de **Solicitudes de Voluntariado**.
+  - Pasarela para el Módulo de **Donaciones**.
+  - Panel nativo de **Métricas y Auditoría** para el Super Admin.
 
 ## Convenciones
 
@@ -212,10 +228,3 @@ La documentación funcional y técnica vive en:
 - `docs/srs/`
 - `docs/architecture/`
 - `docs/ux/`
-
-## Estado del proyecto
-
-**Fase actual:**
-- Definición de arquitectura
-- Definición de requerimientos
-- Planeación del MVP

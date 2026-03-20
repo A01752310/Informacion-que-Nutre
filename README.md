@@ -113,15 +113,41 @@ Para el control operativo y la moderación, el esquema incluye:
 - Panel administrativo
 - Métricas y auditoría
 
-## Entorno local
+## Entorno local y Preparación de Demo
+
+Hemos preparado scripts automatizados para levantar el proyecto con un solo comando y probar la plataforma con datos interactivos reales.
 
 ### Requisitos
 - Node.js 22+
-- pnpm (Recomendado para el monorepo)
+- pnpm 9.0+
 - Python 3.12+
-- Docker
+- Docker y Docker Compose
 
-### Pasos de Instalación y Ejecución
+### Levantar el Entorno Automáticamente (Recomendado para Demo)
+
+1. **Configurar el entorno inicial** (Solo se necesita correr la primera vez y configurará BD, API, Frontend y sembrará datos de prueba):
+   ```bash
+   ./infra/scripts/setup_demo.sh
+   ```
+2. **Arrancar todo el sistema** (Base de datos, API en el puerto 8000, Web en el puerto 3000):
+   ```bash
+   ./infra/scripts/start_demo.sh
+   ```
+   > **Nota:** Para detener todos los servicios, simplemente presiona `Ctrl+C` en la misma terminal.
+
+### Credenciales de Demo
+
+Para probar los diferentes roles y flujos, el script de inicialización crea los siguientes usuarios en la base de datos local:
+
+| Rol | Correo | Contraseña | Uso y permisos esperados en la demo |
+| --- | --- | --- | --- |
+| **Normal** | `usuario@ejemplo.com` | `demo123` | Registros, enviar propuestas de recetas y videos vinculados a recetas públicas. |
+| **Editor OSF** | `editor@nutre.org` | `demo123` | Revisar propuestas pendientes, aprobar/rechazar recetas y gestionar contenido. |
+| **Admin** | `admin@nutre.org` | `demo123` | Control total del sistema. |
+
+### Pasos Manuales de Instalación y Ejecución (Alternativa)
+
+Si prefieres levantar los servicios manualmente, sigue estos pasos:
 
 1. Clonar el repositorio.
 2. Copiar variables de entorno globales:
@@ -143,10 +169,11 @@ Para el control operativo y la moderación, el esquema incluye:
    source venv/bin/activate
    pip install -r requirements.txt
    ```
-6. Ejecutar migraciones iniciales y poblar base de datos de Roles (requiere DB corriendo):
+6. Ejecutar migraciones iniciales y poblar base de datos con roles y datos de prueba:
    ```bash
    alembic upgrade head
    python -m src.db.seed
+   python -m src.db.seed_demo
    cd ../..
    ```
 7. Levantar el proyecto en desarrollo con Turborepo:
@@ -154,13 +181,23 @@ Para el control operativo y la moderación, el esquema incluye:
    pnpm run dev
    ```
 
-### Endpoints Básicos Disponibles (Fase 2)
+### Estado Actual de la API (Fase 2 Terminada)
 
-- **Frontend Local:** [http://localhost:3000](http://localhost:3000)
-- **Backend Health:** `GET /api/v1/health`
+**✅ Endpoints Listos (Disponibles para Frontend):**
+- **Health:** `GET /api/v1/health`
 - **Auth:** `POST /api/v1/auth/login`, `POST /api/v1/auth/register`, `GET /api/v1/auth/me`
 - **Users:** `GET /api/v1/users/me`, `PATCH /api/v1/users/me`
-- **Recipes MVP:** `GET /api/v1/recipes`, `GET /api/v1/recipes/{id}`, `POST /api/v1/recipes/submissions`
+- **Recipes:** `GET /api/v1/recipes`, `GET /api/v1/recipes/{id}`
+- **Submissions:** `POST /api/v1/recipes/submissions`, `GET /api/v1/recipes/submissions/me`, `GET /api/v1/recipes/submissions/pending`, `PATCH /api/v1/recipes/submissions/{id}/review`
+- **Videos:** `POST /api/v1/recipes/videos`, `GET /api/v1/recipes/videos/me`, `GET /api/v1/recipes/videos/pending`, `PATCH /api/v1/recipes/videos/{id}/review`
+
+**🚧 Endpoints en Desarrollo o Backlog:**
+- **Workshops (Talleres):** Endpoints de creación y subscripción a talleres.
+- **Volunteer:** Solicitudes pendientes de voluntariado.
+- **Search:** Búsquedas complejas y filtrados.
+
+**📦 Módulos Modelados Estructuralmente (BD listos, sin exponer):**
+- Ingredientes (Canasta Básica), Logs de Auditoría y Formularios de Contacto.
 
 ## Convenciones
 

@@ -1,14 +1,15 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Text
+from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Text, Enum as SQLEnum, JSON
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from src.db.base import Base
+from src.models.enums import RoleName
 
 class Role(Base):
     __tablename__ = "roles"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String, unique=True, index=True, nullable=False)
+    name = Column(SQLEnum(RoleName), unique=True, index=True, nullable=False)
     description = Column(String)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -36,5 +37,5 @@ class AuditLog(Base):
     action = Column(String)
     entity_type = Column(String)
     entity_id = Column(UUID(as_uuid=True))
-    details = Column(JSONB)
+    details = Column(JSON().with_variant(JSONB(), 'postgresql'))
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

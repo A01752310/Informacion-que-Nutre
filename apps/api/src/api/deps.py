@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, List
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
@@ -7,6 +7,7 @@ from src.core.config import settings
 from src.db.session import SessionLocal
 from src.models.user import User
 from src.schemas.user import TokenData
+from src.models.enums import RoleName
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
 
@@ -41,3 +42,15 @@ def get_current_active_user(current_user: User = Depends(get_current_user)) -> U
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+class RoleChecker:
+    def __init__(self, allowed_roles: List[RoleName]):
+        self.allowed_roles = allowed_roles
+
+    def __call__(self, user: User = Depends(get_current_active_user)) -> User:
+        if not user.role or user.role.name not in [role.value for role in self.allowed_roles]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions"
+            )
+        return user

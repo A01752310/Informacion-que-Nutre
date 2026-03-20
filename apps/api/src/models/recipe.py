@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, ForeignKey, Text
+from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, ForeignKey, Text, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from src.db.base import Base
+from src.models.enums import RecipeStatus, SubmissionStatus, VideoStatus, RecipeDifficulty, RecipeSourceType
 
 class Recipe(Base):
     __tablename__ = "recipes"
@@ -11,12 +12,12 @@ class Recipe(Base):
     description = Column(Text)
     instructions = Column(Text)
     author_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
-    status = Column(String, default="draft")
+    status = Column(SQLEnum(RecipeStatus), default=RecipeStatus.DRAFT)
     servings = Column(Integer)
     estimated_cost = Column(Float)
     prep_time_minutes = Column(Integer)
-    difficulty = Column(String)
-    source_type = Column(String)
+    difficulty = Column(SQLEnum(RecipeDifficulty), nullable=True)
+    source_type = Column(SQLEnum(RecipeSourceType), nullable=True)
     published_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
@@ -30,7 +31,7 @@ class RecipeSubmission(Base):
     instructions = Column(Text)
     suggested_youtube_url = Column(String)
     review_notes = Column(Text)
-    status = Column(String, default="pending_review")
+    status = Column(SQLEnum(SubmissionStatus), default=SubmissionStatus.PENDING_REVIEW)
     created_recipe_id = Column(UUID(as_uuid=True), ForeignKey("recipes.id"), nullable=True)
     reviewed_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
@@ -44,7 +45,7 @@ class RecipeVideo(Base):
     submitted_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     youtube_url = Column(String, nullable=False)
     review_notes = Column(Text)
-    status = Column(String, default="pending_review")
+    status = Column(SQLEnum(VideoStatus), default=VideoStatus.PENDING_REVIEW)
     reviewed_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
